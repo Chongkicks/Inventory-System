@@ -1,0 +1,7 @@
+# Prevent directory listing when a folder has no index file.
+Options -Indexes
+
+# Block direct browser access to local environment secrets.
+<Files ".env">
+    Require all denied
+</Files>

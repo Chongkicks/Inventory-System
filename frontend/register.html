@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Marketsmart Inventory System</title>
+    <link rel="stylesheet" href="style.css?v=20260516-8">
+</head>
+<body class="auth-page">
+    <main class="auth-shell">
+        <section class="auth-card">
+            <div class="auth-heading">
+                <p class="eyebrow">Marketsmart Inventory System</p>
+                <h1>Register</h1>
+                <p>Create an account for the inventory dashboard.</p>
+            </div>
+
+            <div class="notice auth-message" data-message hidden></div>
+
+            <form action="../backend/register.php" method="POST" class="stack" data-csrf-form>
+                <label>
+                    Full Name
+                    <input type="text" name="fullName" placeholder="Enter full name" required>
+                </label>
+
+                <label>
+                    Username
+                    <input type="text" name="username" placeholder="Enter username" required>
+                </label>
+
+                <label>
+                    Email
+                    <input type="email" name="email" placeholder="Enter email" required>
+                </label>
+
+                <label>
+                    Password
+                    <input type="password" name="password" placeholder="Enter password" required>
+                </label>
+
+                <label>
+                    Confirm Password
+                    <input type="password" name="confirm_password" placeholder="Confirm password" required>
+                </label>
+
+                <button type="submit">Register</button>
+            </form>
+
+            <p class="auth-link">Already have an account? <a href="login.html">Login</a></p>
+        </section>
+    </main>
+
+    <script>
+        // Map backend redirect codes to user-facing messages.
+        const messages = {
+            missing: 'Please complete the required fields.',
+            invalidEmail: 'Please enter a valid email address.',
+            passwordMismatch: 'Passwords do not match.',
+            exist: 'Username or email already exists.',
+            invalidName: 'Name contains invalid characters.',
+            invalidUsername: 'Username must be 3-80 characters using letters, numbers, dot, dash, or underscore.',
+            weakPassword: 'Password must be at least 6 characters.',
+            csrf: 'Security token expired. Please try again.',
+            error: 'Registration failed. Please try again.'
+        };
+        const params = new URLSearchParams(window.location.search);
+        const message = messages[params.get('msg')];
+        const box = document.querySelector('[data-message]');
+
+        // Show the redirect message area only when a known code is present.
+        if (message) {
+            box.textContent = message;
+            box.hidden = false;
+        }
+
+        // Prevent submit while the CSRF token request is still pending.
+        document.querySelectorAll('[data-csrf-form]').forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                const tokenInput = form.querySelector('input[name="csrf_token"]');
+
+                if (!tokenInput || tokenInput.value === '') {
+                    event.preventDefault();
+                    box.textContent = 'Security token is loading. Please try again.';
+                    box.hidden = false;
+                }
+            });
+        });
+
+        // Static HTML page requests the CSRF token before submitting registration.
+        fetch('../backend/csrf-token.php', { credentials: 'same-origin' })
+            .then((response) => response.json())
+            .then((data) => {
+                document.querySelectorAll('[data-csrf-form]').forEach((form) => {
+                    let tokenInput = form.querySelector('input[name="csrf_token"]');
+
+                    if (!tokenInput) {
+                        tokenInput = document.createElement('input');
+                        tokenInput.type = 'hidden';
+                        tokenInput.name = 'csrf_token';
+                        form.appendChild(tokenInput);
+                    }
+
+                    tokenInput.value = data.token || '';
+                });
+            });
+    </script>
+</body>
+</html>

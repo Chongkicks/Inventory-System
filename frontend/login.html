@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Marketsmart Inventory System</title>
+    <link rel="stylesheet" href="style.css?v=20260516-8">
+</head>
+<body class="auth-page">
+    <main class="auth-shell">
+        <section class="auth-card">
+            <div class="auth-heading">
+                <p class="eyebrow">Marketsmart Inventory System</p>
+                <h1>Login</h1>
+                <p>Sign in to manage products, stock transactions, and reports.</p>
+            </div>
+
+            <div class="notice auth-message" data-message hidden></div>
+
+            <form action="../backend/login.php" method="POST" class="stack" data-csrf-form>
+                <label>
+                    Username or Email
+                    <input type="text" name="username" placeholder="Enter username or email" required>
+                </label>
+
+                <label>
+                    Password
+                    <input type="password" name="password" placeholder="Enter password" required>
+                </label>
+
+                <button type="submit">Login</button>
+            </form>
+
+            <p class="auth-link">No account yet? <a href="register.html">Register</a></p>
+        </section>
+    </main>
+
+    <script>
+        // Map backend redirect codes to user-facing messages.
+        const messages = {
+            missing: 'Please complete all fields.',
+            invalid: 'Invalid username/email or password.',
+            csrf: 'Security token expired. Please try again.',
+            registered: 'Registration successful. You can now login.',
+            logout: 'You have been logged out.'
+        };
+        const params = new URLSearchParams(window.location.search);
+        const message = messages[params.get('msg')];
+        const box = document.querySelector('[data-message]');
+
+        // Show the redirect message area only when a known code is present.
+        if (message) {
+            box.textContent = message;
+            box.hidden = false;
+        }
+
+        // Prevent submit while the CSRF token request is still pending.
+        document.querySelectorAll('[data-csrf-form]').forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                const tokenInput = form.querySelector('input[name="csrf_token"]');
+
+                if (!tokenInput || tokenInput.value === '') {
+                    event.preventDefault();
+                    box.textContent = 'Security token is loading. Please try again.';
+                    box.hidden = false;
+                }
+            });
+        });
+
+        // Static HTML page requests the CSRF token before submitting login.
+        fetch('../backend/csrf-token.php', { credentials: 'same-origin' })
+            .then((response) => response.json())
+            .then((data) => {
+                document.querySelectorAll('[data-csrf-form]').forEach((form) => {
+                    let tokenInput = form.querySelector('input[name="csrf_token"]');
+
+                    if (!tokenInput) {
+                        tokenInput = document.createElement('input');
+                        tokenInput.type = 'hidden';
+                        tokenInput.name = 'csrf_token';
+                        form.appendChild(tokenInput);
+                    }
+
+                    tokenInput.value = data.token || '';
+                });
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Local secrets must stay out of git.
+.env
+
+# Dependencies and writable runtime files are recreated locally.
+/vendor/
+/storage/sessions/*
+!/storage/sessions/.gitkeep
+
+# Temporary/debug output.
+*.log
+*.tmp
+*.dmp
+
+# OS-generated files.
+Thumbs.db
+.DS_Store
